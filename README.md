@@ -38,7 +38,7 @@ A lightweight, versatile, and innovative **Database Management System (DBMS)** b
 | `master`         | Contains all commits for the CLI version.     |  
 
 ---
-##👨‍💻 Authors
+👨‍💻 Authors
 
 Hossam Zakaria  
 Abdelrahman Ebeid  
