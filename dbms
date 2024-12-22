@@ -1,0 +1,97 @@
+#!/bin/bash
+
+if [ ! -e ~/DBMS/Database ]; then
+    mkdir Database
+    cd ~/DBMS/Database
+    else
+    cd ~/DBMS/Database
+fi
+PS3="Select Value : " #prompt
+echo "--- Welcome To DBMS ---"
+echo
+
+exit=true
+COLUMNS=1 #more readable in terminal put in coulmns 
+while $exit;
+    do
+    select name in "create database" "remove database" "list database" "connect to a database" "exit"; 
+    do
+        case $name in
+        "create database")
+            read -p "enter database name: " dbName
+                #if [[ "$dbName" =~ ^[0-9] || "$dbName" =~ [[:space:]] || "$dbName" =~ ]]
+                 if [[ -e "$dbName" ]]
+                    then
+                        echo "Database exist"
+                    else
+                       if [[ "$dbName" =~ ^[a-zA-Z][a-zA-Z0-9_]*$ ]] #mix letters #starts with letters , ends with zero or more of [a-zA-Z0-9] _ after  9 allows db_1 '_'
+                        then 
+                            mkdir "$dbName"
+                            echo "Database Created Successfully Called : '$dbName'"
+                        else
+                            echo "Invalid Database Name 'Cannot Start With Numbers Or Contain Spaces' or Special Char "
+                        fi
+                fi
+                echo
+                echo "Available Options"
+                break
+        ;;
+        "remove database")
+            read -p "Enter database name to delete: " dbName
+            if [[ -e $dbName ]]; 
+            then
+                rm -r $dbName
+                echo "Database '$dbName' Removed Successfully "
+            else
+                echo "Database doesn't exist or not valid"
+            fi
+                echo
+                echo "Available Options"
+                break
+        ;;
+        "list database")
+            if [[ -z "$(ls -p | grep  /$ | sed 's:/$::' )" ]]; 
+            then 
+            echo
+            echo "EmptyDatabase"
+            else
+            echo 
+            ls -p | grep  /$ | sed 's:/$::' #ls -d list current dirc takes argument  */ wild card
+            fi
+            echo
+            echo "Available Options"
+            break
+        ;;
+        "connect to a database")
+            read -p "enter database name: " dbName
+            if [[ -e $dbName ]];
+             then
+                # cd $dbName
+                ../connect "$dbName"
+            else
+                echo "There is no database with this name"
+            fi
+                echo 
+                echo "Available Options "
+                break
+        ;;
+        "exit")
+                read -p "Are you Sure You Want To Exit ? (yes/no)" answer
+                if [[ "yes" =~ $answer ]]
+                then
+                    exit=false
+                fi
+
+                echo
+                echo "Available Options"
+                break
+        ;;
+        *)
+            echo "Unkown Value"
+            echo 
+                echo "Available Options"
+                break
+        esac
+
+    done
+done

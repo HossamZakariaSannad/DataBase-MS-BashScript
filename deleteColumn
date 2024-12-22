@@ -1,0 +1,66 @@
+#!/bin/bash
+
+tableName="$1"
+metadataFile=".$tableName""_metadata"
+
+# Check if the table's metadata file exists
+if [[ ! -f "$metadataFile" ]]; then
+    echo "Error: Table '$tableName' does not exist."
+    exit 1
+fi
+
+# Get the size of the metadata file (number of lines)
+size=$(cat "$metadataFile" | wc -l)
+
+# Display first NR with $NF 
+awk -F ':' '
+NR == 1 {
+    for (i = 1; i <= NF; i++) {
+        print i ": " $i
+    }
+}' "$tableName"
+
+
+read -p "Enter the column number to filter by: " colChoice ########################
+
+# Validate column number choice
+if [[ "$colChoice" -ge 1 && "$colChoice" -le "$size" ]]; then
+
+            # Prompt the user to provide the value to delete
+        read -p "Enter the value to delete from column $colChoice: " valueToDelete ##############################
+
+        # store row you want to delete in array 
+        wantdelete=($(awk -F ':' -v col="$colChoice" -v value="$valueToDelete" '
+        {
+            if (NR>1)
+            {
+            if ($col == value) {
+                print $0
+            }
+            }
+      
+        }' "$tableName" ))
+
+        
+                                        
+      #check values existance
+       if [[ ${#wantdelete[@]} -eq 0 ]]  #echo "${#wantdelete[@]}"  size , length
+       then
+         echo "Not Available Values In Table"
+         exit 1
+       fi
+       
+        #loop through array and sed /d [delete from table]
+        counter=0
+        for line in ${wantdelete[@]} 
+        do
+         sed -i "/$line/d" "$tableName" 
+        ((counter++))
+        done
+        echo "all rows contain value '$valueToDelete' in column $colChoice deleted."
+        echo "$counter rows removed"
+    else
+        echo "Error: Invalid column number selected."
+        exit 1
+fi
+

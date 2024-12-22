@@ -1,0 +1,80 @@
+#!/bin/bash
+
+
+tableName="$1"
+
+read -p "Enter the number of columns: " columnCount
+
+# Column count validation ^must start $must end -- not negative
+if ! [[ "$columnCount" =~ ^[0-9]+$ ]]; then
+    echo "Invalid number of columns. Must be a positive integer and not null."
+    exit 1
+fi
+
+
+# Flag to set pk true if set
+pkFlag=true
+
+# Loop over columns
+for ((i=1; i<=columnCount; i++))
+ do 
+    row=""
+    echo "You are in column $i:"
+    read -p " Enter ColumnName : " columnName # Set column name
+    # Space constraint
+    if [[ "$columnName" =~ ^[a-zA-Z]+$ ]]
+     then
+     row+="$columnName"
+    else    
+         echo "Invalid Column Name"
+        ((i--)) # Go back to same column to rename
+        continue # Skip to next loop
+    fi
+
+    #col type 
+    read -p "please enter column Datatype (int/str): " colType #
+    if [[ "int" == "$colType" || "str" == "$colType" ]]
+    then
+        row+=:$colType
+    else
+        echo "Invalid Data Type "
+        ((i--))
+        continue
+    fi  
+
+ #pk validate
+ if $pkFlag 
+ then
+    read -p "  Set first column as primary key? Only available in this column (yes/no): " isPrimaryKey
+    if [[ "yes" =~ "$isPrimaryKey" ]]
+    then
+    row+=:PK
+    pkFlag=false
+    else
+        if [[ "no" =~ "$isPrimaryKey" ]]
+        then
+               echo $row >> .$tableName"_metadata"  
+               pkFlag=false #wont ask again
+             continue
+        else
+            echo " invalid choice "
+            ((i--))
+            continue
+            
+        fi
+    fi
+
+    fi
+  echo $row >> .$tableName"_metadata"   ##append in metadata 
+ 
+done
+
+while IFS=: read -r col type pk ; do
+    echo -n "$col:" >> $tableName
+done < .$tableName"_metadata"
+
+
+sed -i 's/:*$//' $tableName #remove last :
+echo "" >> "$tableName" #when adding values in insert it skips first line
+echo "Table '$tableName' created successfully with the following columns:"
+ 

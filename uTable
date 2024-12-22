@@ -1,0 +1,73 @@
+#!/bin/bash
+
+tableName="$1"
+metadataFile=".$tableName""_metadata"
+
+# Check if the table's metadata file exists
+if [[ ! -f "$metadataFile" ]]; then
+    echo "Error: Table '$tableName' does not exist."
+    exit 1
+fi
+
+# Get the size of the metadata file (number of lines)
+size=$(cat "$metadataFile" | wc -l)
+
+# Display first NR with $NF 
+awk -F ':' '
+NR == 1 {
+    for (i = 1; i <= NF; i++) {
+        print i ": " $i
+    }
+}' "$tableName"
+
+
+read -p "Enter the column number to filter by: " colChoice ########################
+
+# Validate column number choice
+if [[ "$colChoice" -ge 1 && "$colChoice" -le "$size" ]]; then
+
+    # Prompt the user to provide the value to update
+    read -p "Enter the value to update in column $colChoice: " valueToUpdate ##############################
+    read -p "Enter the new value for column $colChoice: " newValue ##############################
+
+    # store row you want to update in array 
+    wantupdate=($(awk -F ':' -v col="$colChoice" -v value="$valueToUpdate" '
+    {
+    if (NR >1){
+        if ($col == value) {
+            print $0
+        }
+        }
+    }' "$tableName" ))
+
+    # Check if no values detected in table
+    if [[ ${#wantupdate[@]} -eq 0 ]]; then
+        echo "Not Available Values In Table"
+        exit 1
+    fi
+
+    # Loop through array and update the column
+    counter=0
+    for line in "${wantupdate[@]}"
+    do
+        # Update the specific column value by replacing it with the new value   #colchoice inside ok $1 field 1 , 
+        updatedLine=$(echo "$line" | awk -F ':' -v col="$colChoice" -v newValue="$newValue" '{  
+            $col = newValue
+            OFS=":"          
+            $1=$1            #Re-apply OFS by forcing awk to re-evaluate the line
+            print $0
+        }')
+        
+        # Replace the old row with the updated row
+    
+        sed -i "s/$line/$updatedLine/" "$tableName"
+        ((counter++))
+    done
+    
+    echo "Rows with value '$valueToUpdate' in column $colChoice have been updated."
+    echo "$counter rows updated."
+
+else
+    echo "Error: Invalid column number selected."
+    exit 1
+fi

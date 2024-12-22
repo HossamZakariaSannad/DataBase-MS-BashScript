@@ -1,0 +1,121 @@
+#!/bin/bash
+
+dbName="$1"
+cd $dbName
+echo "You are now connected to the database: $dbName"
+
+exit=true
+while $exit; do
+    COLUMNS=1
+    echo
+    PS3="Choose an option in $dbName: "
+    select option in "list tables" "create table" "insert into table" "update table" "select from table" "delete record" "drop table" "exit database"; do
+        case $option in
+        "list tables")
+            if [[ -z "$(ls -p | grep -v /$)" ]]
+            then #ls -p | grep -v [-p directories with /] grev -v /$ remove eli a5ro / 
+                echo "There are no tables in this database."
+            else
+                echo "Tables in $dbName:"
+                ls 
+            fi
+                echo
+                echo "Available Options"
+                break
+            ;;
+        "create table")
+            read -p "Enter table name to create: " tableName
+            if [[ -e "$tableName" ]]
+            then
+                echo "Table In Database Already Exist"
+                else
+                    if [[ "$tableName" =~ ^[0-9] || "$tableName" =~ [[:space:]] || -z "$tableName" ]]
+                    then
+                        echo "Table Name Can't Start With Numbers , Contain Spaces , Or Null"
+                    else
+                        ../../cTable "$tableName"
+                    fi
+            fi
+                echo
+                echo "Available Options"
+                break
+            ;;
+        "insert into table")
+            read -p "Enter table name to insert into: " tableName
+            if [[ -e "$tableName" ]]
+            then
+                ../../insertTable "$tableName"
+            else
+                echo "Table '$tableName' does not exist."
+            fi
+                echo
+                echo "Available Options"
+                break      
+            ;;
+        "update table")
+            read -p "Enter table name to update: " tableName
+            if [[ -e "$tableName" ]]
+            then
+                ../../uTable "$tableName" 
+            else
+                echo "Table '$tableName' does not exist."
+            fi
+                echo
+                echo "Available Options"
+                break
+            ;;  
+        "select from table")
+            read -p "Enter table name to select from: " tableName
+            if [[ -e "$tableName" ]]
+            then
+                ../../selectFROM "$tableName" 
+            else
+                echo "Table '$tableName' does not exist."
+            fi
+                echo
+                echo "Available Options"
+                break
+            ;;
+        "delete record")
+            read -p "Enter table name to delete record from: " tableName
+            if [[ -e "$tableName" ]]
+            then
+               ../../deleteColumn "$tableName"   
+            else
+                echo "Table '$tableName' does not exist."
+            fi
+                echo
+                echo "Available Options"
+                break
+            ;;
+        "drop table")
+            read -p "Enter table name to remove: " tableName
+            if [[ -e "$tableName" ]]
+            then
+                rm -i "$tableName"  #-i asks before remove -f for focring 
+                    if [[ ! -e "$tableName" ]] #if not exist
+                    then
+                    rm "$tableName"_metadata
+                    fi
+                echo "Table '$tableName' removed successfully."
+            else
+                echo "Table '$tableName' does not exist."
+            fi
+                echo
+                echo "Available Options"
+                break
+            ;;
+        "exit database")
+            echo "Exiting database '$dbName' and returning to the main menu."
+            exit=false
+            break
+            ;;
+        *)
+            echo "UNKNOWN OPTION"
+            echo
+            echo "Available Options"
+            break
+            ;;
+        esac
+    done
+done
