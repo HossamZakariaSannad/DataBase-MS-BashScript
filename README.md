@@ -43,7 +43,7 @@ A lightweight, versatile, and innovative **Database Management System (DBMS)** b
 Hossam Zakaria  
 Abdelrahman Ebeid  
 
-
+---
 ## 🚀 Getting Started  
 
 Abdelrahman Ebeid  
